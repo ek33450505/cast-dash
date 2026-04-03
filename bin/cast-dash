@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+# cast-dash — Terminal UI dashboard for Claude Code
+#
+# Usage: cast-dash [subcommand] [options]
+#
+# Subcommands: launch (default), setup, --version
+
+set -uo pipefail
+
+# ── Script directory (resolve symlinks) ──────────────────────────────────────
+CD_BIN_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+CD_REPO_DIR="$(cd "$CD_BIN_DIR/.." && pwd)"
+
+# ── Dash directory — replaced by Homebrew formula at install time ────────────
+CAST_DASH_DIR=""
+
+# ── Version ──────────────────────────────────────────────────────────────────
+if [ -n "${CAST_DASH_DIR:-}" ]; then
+  CD_VERSION="$(cat "${CAST_DASH_DIR}/VERSION" 2>/dev/null || echo "unknown")"
+else
+  CD_VERSION="$(cat "${CD_REPO_DIR}/VERSION" 2>/dev/null || echo "unknown")"
+fi
+
+# ── Colors ────────────────────────────────────────────────────────────────────
+if [ -t 1 ] && [ "${TERM:-}" != "dumb" ]; then
+  C_BOLD='\033[1m'
+  C_GREEN='\033[0;32m'
+  C_YELLOW='\033[0;33m'
+  C_CYAN='\033[0;36m'
+  C_RED='\033[0;31m'
+  C_DIM='\033[2m'
+  C_RESET='\033[0m'
+else
+  C_BOLD='' C_GREEN='' C_YELLOW='' C_CYAN='' C_RED='' C_DIM='' C_RESET=''
+fi
+
+_info()    { printf "${C_CYAN}%s${C_RESET}\n" "$*"; }
+_success() { printf "${C_GREEN}%s${C_RESET}\n" "$*"; }
+_warn()    { printf "${C_YELLOW}%s${C_RESET}\n" "$*" >&2; }
+_error()   { printf "${C_RED}Error: %s${C_RESET}\n" "$*" >&2; }
+_bold()    { printf "${C_BOLD}%s${C_RESET}\n" "$*"; }
+
+# ── Resolve scripts source dir ────────────────────────────────────────────────
+_scripts_dir() {
+  if [ -n "${CAST_DASH_DIR:-}" ]; then
+    echo "$CAST_DASH_DIR"
+  else
+    echo "${CD_REPO_DIR}/scripts"
+  fi
+}
+
+# ── Resolve config dir ────────────────────────────────────────────────────────
+_config_dir() {
+  if [ -n "${CAST_DASH_DIR:-}" ]; then
+    echo "${CAST_DASH_DIR}/config"
+  else
+    echo "${CD_REPO_DIR}/config"
+  fi
+}
+
+# ── Find Python ──────────────────────────────────────────────────────────────
+_find_python() {
+  local venv_python="${HOME}/.claude/venv/bin/python3"
+  if [ -x "$venv_python" ]; then
+    echo "$venv_python"
+  elif command -v python3 &>/dev/null; then
+    echo "python3"
+  else
+    _error "Python 3 not found. Install Python 3.9+ or run: cast-dash setup"
+    exit 1
+  fi
+}
+
+# ── Check textual ────────────────────────────────────────────────────────────
+_check_textual() {
+  local python_cmd="$1"
+  if ! "$python_cmd" -c "import textual" 2>/dev/null; then
+    _error "textual is not installed."
+    printf "\n  Run: ${C_BOLD}cast-dash setup${C_RESET}\n\n"
+    printf "  This creates a venv at ~/.claude/venv/ and installs textual.\n\n"
+    exit 1
+  fi
+}
+
+# ── Subcommand: launch (default) ─────────────────────────────────────────────
+_cmd_launch() {
+  local python_cmd
+  python_cmd="$(_find_python)"
+  _check_textual "$python_cmd"
+
+  local scripts_dir
+  scripts_dir="$(_scripts_dir)"
+  local dash_script="${scripts_dir}/cast-dash.py"
+
+  if [ ! -f "$dash_script" ]; then
+    _error "Dashboard script not found: $dash_script"
+    exit 1
+  fi
+
+  # Set environment
+  export CAST_DB_PATH="${CAST_DB_PATH:-${HOME}/.claude/cast.db}"
+  export CAST_CONFIG_DIR="$(_config_dir)"
+
+  exec "$python_cmd" "$dash_script"
+}
+
+# ── Subcommand: setup ────────────────────────────────────────────────────────
+_cmd_setup() {
+  local venv_dir="${HOME}/.claude/venv"
+
+  printf "\n"
+  _bold "cast-dash setup — Python environment"
+  printf "${C_DIM}%s${C_RESET}\n" "══════════════════════════════════════"
+
+  # Create venv
+  if [ ! -d "$venv_dir" ]; then
+    printf "  Creating venv at ${venv_dir}...\n"
+    python3 -m venv "$venv_dir" || { _error "Failed to create venv"; exit 1; }
+    _success "  venv created"
+  else
+    _success "  venv already exists at ${venv_dir}"
+  fi
+
+  # Install textual
+  printf "  Installing textual...\n"
+  "${venv_dir}/bin/pip3" install --quiet textual || { _error "Failed to install textual"; exit 1; }
+  _success "  textual installed"
+
+  # Verify
+  if "${venv_dir}/bin/python3" -c "import textual; print(f'  textual {textual.__version__}')" 2>/dev/null; then
+    _success "  Verification passed"
+  else
+    _warn "  Could not verify textual import"
+  fi
+
+  printf "\n${C_GREEN}Setup complete.${C_RESET} Run: ${C_BOLD}cast-dash${C_RESET}\n\n"
+}
+
+# ── Usage ─────────────────────────────────────────────────────────────────────
+_usage() {
+  cat <<USAGE
+${C_BOLD}cast-dash v${CD_VERSION}${C_RESET} — Terminal UI dashboard for Claude Code
+
+Usage: cast-dash [subcommand] [options]
+
+Subcommands:
+  ${C_BOLD}launch${C_RESET}  (default)     Launch the TUI dashboard
+  ${C_BOLD}setup${C_RESET}                 Create Python venv and install textual
+
+Options:
+  --db <path>        Override cast.db path (default: ~/.claude/cast.db)
+  --version, -v      Print version
+  --help, -h         Show this help
+USAGE
+}
+
+# ── Main dispatch ─────────────────────────────────────────────────────────────
+case "${1:-}" in
+  launch)
+    shift
+    _cmd_launch "$@"
+    ;;
+  setup)
+    _cmd_setup
+    ;;
+  --version|-v)
+    echo "cast-dash v${CD_VERSION}"
+    ;;
+  --help|-h|help)
+    _usage
+    ;;
+  --db)
+    shift
+    if [ -z "${1:-}" ]; then
+      _error "--db requires a path argument"
+      exit 1
+    fi
+    export CAST_DB_PATH="$1"
+    shift
+    _cmd_launch "$@"
+    ;;
+  "")
+    _cmd_launch
+    ;;
+  *)
+    _error "Unknown subcommand: ${1}"
+    printf "Run 'cast-dash --help' for usage.\n" >&2
+    exit 1
+    ;;
+esac

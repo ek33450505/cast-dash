@@ -1,0 +1,127 @@
+# cast-dash
+
+![version](https://img.shields.io/badge/version-0.1.0-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
+![python](https://img.shields.io/badge/python-3.9%2B-yellow)
+
+htop for Claude Code. A live terminal dashboard that shows active agents, costs, recent runs, and system health — all from `cast.db`. No browser, no web server, no configuration. Launch it and see what Claude Code is doing right now.
+
+## Screenshot
+
+```
++-- CAST Dashboard -----------------------------------------------+
+|  Active Agents (5s poll)       |  Today's Stats                  |
+|  ----------------------------  |  ----------------------------   |
+|  [DataTable: agent/status/     |  Runs: 12  Cost: $0.43          |
+|   model/elapsed]               |  Tokens: 180K  Errors: 1        |
+|                                |  [Sparkline: hourly cost]       |
+|--------------------------------|---------------------------------|
+|  Recent Runs (last 20)         |  System Health                  |
+|  ----------------------------  |  ----------------------------   |
+|  [DataTable: agent/status/     |  Agents: 17  Hooks: 14          |
+|   cost/duration/ago]           |  Skills: 8   Plans: 54          |
+|                                |  DB: 18 runs, 5 sessions        |
++--------------------------------+---------------------------------+
+  q:quit  r:refresh  Tab:focus             cast.db: OK  5s refresh
+```
+
+## Install
+
+### Homebrew
+
+```bash
+brew tap ek33450505/cast-dash
+brew install cast-dash
+cast-dash setup
+```
+
+### Manual
+
+```bash
+git clone https://github.com/ek33450505/cast-dash.git
+cd cast-dash
+bash install.sh
+```
+
+## Usage
+
+```bash
+# Launch with default cast.db path (~/.claude/cast.db)
+cast-dash
+
+# Custom database path
+cast-dash --db /path/to/cast.db
+
+# Set up Python venv and install textual
+cast-dash setup
+
+# Print version
+cast-dash --version
+```
+
+## Panels
+
+### Active Agents
+
+DataTable showing currently running agents with model, status, and elapsed time. Polls cast.db every 5 seconds. Agents appear when `SubagentStart` fires and clear when `SubagentStop` completes.
+
+### Today's Stats
+
+Aggregate numbers for the current day: total runs, cumulative cost (calculated from token counts and `model-pricing.json`), total tokens processed, and error count. Includes an hourly cost sparkline showing spend distribution across the day.
+
+### Recent Runs
+
+Last 20 agent runs with agent name, status, cost, duration, and time ago. Color-coded by status: green for DONE, yellow for DONE_WITH_CONCERNS, red for BLOCKED, blue (bold) for currently running.
+
+### System Health
+
+File counts for key CAST directories: agents (`~/.claude/agents/`), hooks (`~/.claude/scripts/`), skills (`~/.claude/skills/`), plans (`~/.claude/plans/`). Also shows cast.db row counts for runs and sessions.
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|---|---|
+| `q` | Quit |
+| `r` | Force refresh (bypass 5s timer) |
+| `Tab` | Cycle focus between panels |
+
+## Status Colors
+
+| Color | Status |
+|---|---|
+| Green | DONE |
+| Yellow | DONE_WITH_CONCERNS |
+| Red | BLOCKED |
+| Blue (bold) | Running |
+
+## Data Source
+
+cast-dash reads `~/.claude/cast.db` (SQLite, read-only, WAL-safe). The database is populated by any CAST component that writes observability data — cast-hooks, cast-observe, or the full CAST framework. If cast.db does not exist or is empty, panels display placeholder data.
+
+Override the database path with `--db`:
+
+```bash
+cast-dash --db ~/backups/cast.db
+```
+
+## Requirements
+
+- Python 3.9+
+- [textual](https://github.com/Textualize/textual) (auto-installed by `cast-dash setup` or `install.sh`)
+- `cast.db` — from cast-hooks, cast-observe, or the full CAST install
+
+## CAST Ecosystem
+
+cast-dash is part of [CAST](https://github.com/ek33450505/claude-agent-team) (Claude Agent Specialist Team) — a multi-agent framework for Claude Code with orchestration, hooks, observability, and automated plan execution. Each component works standalone or together:
+
+- [claude-agent-team](https://github.com/ek33450505/claude-agent-team) — full CAST framework
+- [cast-agents](https://github.com/ek33450505/cast-agents) — 17 specialist agent definitions
+- [cast-hooks](https://github.com/ek33450505/cast-hooks) — hook scripts framework
+- [cast-observe](https://github.com/ek33450505/cast-observe) — observability hooks
+- [cast-security](https://github.com/ek33450505/cast-security) — security guards
+- [homebrew-cast](https://github.com/ek33450505/homebrew-cast) — Homebrew tap for full CAST
+
+## License
+
+MIT — see [LICENSE](LICENSE)
