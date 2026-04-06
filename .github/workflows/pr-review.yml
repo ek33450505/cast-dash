@@ -1,0 +1,24 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review the changed files in this PR for cast-dash. Focus on:
+            1. Textual widget correctness and responsive layout
+            2. SQLite read-only access — no writes to cast.db
+            3. Graceful handling of missing or empty cast.db
+            4. No hardcoded paths — use $HOME or ~/
+            Post findings as a PR comment. Cite file:line for each issue.
