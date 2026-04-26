@@ -20,7 +20,7 @@ htop for Claude Code. A live terminal dashboard that shows active agents, costs,
 |--------------------------------|---------------------------------|
 |  Recent Runs (last 20)         |  System Health                  |
 |  ----------------------------  |  ----------------------------   |
-|  [DataTable: agent/status/     |  Agents: 17  Hooks: 14          |
+|  [DataTable: agent/status/     |  Agents: 30  Hooks: 14          |
 |   cost/duration/ago]           |  Skills: 8   Plans: 54          |
 |                                |  DB: 18 runs, 5 sessions        |
 +--------------------------------+---------------------------------+
@@ -118,7 +118,7 @@ Each CAST component ships as a standalone Homebrew package. Mix and match to bui
 
 | Package | What It Does | Install |
 |---------|-------------|---------|
-| [cast-agents](https://github.com/ek33450505/cast-agents) | 17 specialist Claude Code agents | `brew tap ek33450505/cast-agents && brew install cast-agents` |
+| [cast-agents](https://github.com/ek33450505/cast-agents) | 30 specialist Claude Code agents | `brew tap ek33450505/cast-agents && brew install cast-agents` |
 | [cast-hooks](https://github.com/ek33450505/cast-hooks) | 13 hook scripts — observability, safety gates, dispatch | `brew tap ek33450505/cast-hooks && brew install cast-hooks` |
 | [cast-observe](https://github.com/ek33450505/cast-observe) | Session cost + token spend tracking | `brew tap ek33450505/cast-observe && brew install cast-observe` |
 | [cast-security](https://github.com/ek33450505/cast-security) | Policy gates, PII redaction, audit trail | `brew tap ek33450505/cast-security && brew install cast-security` |
