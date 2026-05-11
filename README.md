@@ -112,6 +112,10 @@ cast-dash --db ~/backups/cast.db
 - [textual](https://github.com/Textualize/textual) (auto-installed by `cast-dash setup` or `install.sh`)
 - `cast.db` — from cast-hooks, cast-observe, or the full CAST install
 
+## Part of CAST
+
+cast-dash visualizes data from [CAST](https://github.com/ek33450505/claude-agent-team)'s cast.db observability layer. If you don't run CAST, the dashboard won't have data to display. If you do run CAST, you can install this TUI dashboard standalone via Homebrew and monitor all your Claude Code activity from the terminal.
+
 ## CAST Ecosystem
 
 Each CAST component ships as a standalone Homebrew package. Mix and match to build your own stack.
