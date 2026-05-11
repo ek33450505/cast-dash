@@ -1,7 +1,7 @@
 # cast-dash
 
 [![CI](https://github.com/ek33450505/cast-dash/actions/workflows/ci.yml/badge.svg)](https://github.com/ek33450505/cast-dash/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-0.1.0-blue)
+![version](https://img.shields.io/badge/version-0.2.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
 ![python](https://img.shields.io/badge/python-3.9%2B-yellow)

@@ -2,6 +2,21 @@
 
 All notable changes to cast-dash are documented here.
 
+## [0.2.0] — 2026-05-11 — Polish + Ecosystem Cross-Linking
+
+### Added
+- Ecosystem cross-link table in README pointing to all CAST Homebrew packages
+- CI status badge (GitHub Actions workflow)
+- GitHub community files: issue templates, PR template, contributing guide, code of conduct
+- Agent count updated from 17 to 30 in README
+
+### Changed
+- README polish: ecosystem section with full package table, cross-links to cast-agents, cast-hooks, cast-observe, cast-security, cast-memory, cast-parallel
+- Version badge updated from 0.1.0 to 0.2.0
+
+### Notes
+- This entry retroactively documents what shipped in v0.2.0. Future releases will have entries committed at release time.
+
 ## [0.1.0] — 2026-04-03
 
 ### Added
